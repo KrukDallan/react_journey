@@ -1,52 +1,60 @@
-// src/App.jsx
-
 import React, { useState } from "react";
-import {RandomColorButton, Color} from "./components/RandomColorButton";
 import namer from "color-namer";
-import "./App.css"; // Assuming you have some styles in App.css
+import { RandomColorButton, Color } from "./components/RandomColorButton";
+
 
 function App() {
   const [color, setColor] = useState("#ffffff");
-  const [colorName, setColorName] = useState("White");
+  const [colorName, setColorName] = useState("white");
   const [colorHistory, setColorHistory] = useState([]);
 
+  const generateRandomColor = () => {
+    const hex = "#" + Math.floor(Math.random() * 16777215).toString(16);
+    const name = namer(hex).ntc[0].name;
+    return { hex, name };
+  };
 
-  const changeColor = () => {
-    const newColor = "#" + Math.floor(Math.random() * 16777215).toString(16);
-    document.body.style.backgroundColor = newColor;
-    setColor(newColor);
-    const name = namer(newColor).ntc[0].name; // you could use .pantone or .html too
+  const changeColor = (colorObj = generateRandomColor()) => {
+    const { hex, name } = colorObj;
+
+    document.body.style.backgroundColor = hex;
+    setColor(hex);
     setColorName(name);
 
-    setColorHistory(prev => [newColor, ...prev.slice(0, 9)]);
+    // Only add to history if colorObj came from generateRandomColor (i.e. no param passed)
+    if (!colorObj.passedIn) {
+      setColorHistory((prev) => [colorObj, ...prev.slice(0, 9)]);
+    }
+  };
+
+  // When clicking a history color, we mark it as 'passedIn' so it doesn’t add again
+  const handleHistoryClick = (colorObj) => {
+    changeColor({ ...colorObj, passedIn: true });
   };
 
   return (
-    <div>
-      <h1>Background color: {color}</h1>
-      <h2>Color name: {colorName}</h2>
-      <RandomColorButton onClick={changeColor} />
+    <div style={{ textAlign: "center", marginTop: "2rem" }}>
+      <h1>
+        Background color: <span>{colorName}</span>
+      </h1>
+      <button onClick={() => changeColor()}>Random color</button>
+
       <h3>History:</h3>
-      <ul className="color-history">
-        {colorHistory.map((c, index) => (
+      <ul style={{ listStyle: "none", padding: 0, maxWidth: 200, margin: "1rem auto" }}>
+        {colorHistory.map((c, i) => (
           <li
-            key={index}
+            key={i}
+            onClick={() => handleHistoryClick(c)}
             style={{
-              backgroundColor: c,
+              backgroundColor: c.hex,
               color: "#fff",
               padding: "0.5rem",
               marginBottom: "0.25rem",
               borderRadius: "4px",
-              cursor: "pointer"
-            }}
-            onClick={() => {
-              document.body.style.backgroundColor = c;
-              setColor(c);
-              const name = namer(c).ntc[0].name;
-              setColorName(name);
+              cursor: "pointer",
             }}
           >
-            {c}
+            {c.name} ({c.hex})
           </li>
         ))}
       </ul>

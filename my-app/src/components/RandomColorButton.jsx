@@ -17,4 +17,4 @@ class Color {
   }
 }
 
-export default RandomColorButton;
+export {RandomColorButton, Color};
