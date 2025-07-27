@@ -1,32 +1,55 @@
-import React, { useEffect, useState } from "react";
+// src/App.jsx
 
- const API_BASE_URL = window.location.hostname === 'localhost'
-   ? "http://localhost:8000"
-   : "http://backend:8000";
-
-  console.log("API Base URL:", API_BASE_URL);
+import React, { useState } from "react";
+import {RandomColorButton, Color} from "./components/RandomColorButton";
+import namer from "color-namer";
+import "./App.css"; // Assuming you have some styles in App.css
 
 function App() {
-  const [message, setMessage] = useState("");
+  const [color, setColor] = useState("#ffffff");
+  const [colorName, setColorName] = useState("White");
+  const [colorHistory, setColorHistory] = useState([]);
 
-  useEffect(() => {
-fetch(`${API_BASE_URL}/hello`)
-  .then(res => res.json())
-  .then(data => setMessage(data.message))
-  .catch(console.error);
-  }, []);
+
+  const changeColor = () => {
+    const newColor = "#" + Math.floor(Math.random() * 16777215).toString(16);
+    document.body.style.backgroundColor = newColor;
+    setColor(newColor);
+    const name = namer(newColor).ntc[0].name; // you could use .pantone or .html too
+    setColorName(name);
+
+    setColorHistory(prev => [newColor, ...prev.slice(0, 9)]);
+  };
 
   return (
-    <div style={{
-      height: "100vh",
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      fontSize: "2rem",
-      fontWeight: "bold",
-      color: "#333"
-    }}>
-      {message || "Loading..."}
+    <div>
+      <h1>Background color: {color}</h1>
+      <h2>Color name: {colorName}</h2>
+      <RandomColorButton onClick={changeColor} />
+      <h3>History:</h3>
+      <ul className="color-history">
+        {colorHistory.map((c, index) => (
+          <li
+            key={index}
+            style={{
+              backgroundColor: c,
+              color: "#fff",
+              padding: "0.5rem",
+              marginBottom: "0.25rem",
+              borderRadius: "4px",
+              cursor: "pointer"
+            }}
+            onClick={() => {
+              document.body.style.backgroundColor = c;
+              setColor(c);
+              const name = namer(c).ntc[0].name;
+              setColorName(name);
+            }}
+          >
+            {c}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
